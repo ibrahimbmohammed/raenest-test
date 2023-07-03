@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
 
 function App() {
@@ -31,15 +31,19 @@ function App() {
   const handleCurrencyInput = (e) => {
     setCurrencyInput(e);
     if (selectedcurrencyOps === " " || selectedcurrencyOps == null) return;
+    // handle edge case when nothing is returned
     const rate = data[selectedcurrencyOps];
     const convValue = rate * currencyInput;
     if (convValue) {
       setSecondCurrencyInput(convValue);
     }
   };
+
   const handleCurrencySelect = (e) => {
     fetchData(e);
     setCurrencyOps2(currencyOps.filter((item) => item.currency != e));
+    const value = currencyOps.filter((item) => item.currency != e)[0];
+    handleCurrencySelect2(value?.currency);
   };
   const handleCurrencySelect2 = (e) => {
     setSelectedcurrencyOps(e);
@@ -60,7 +64,7 @@ function App() {
         </div>
         <div className="">
           <input
-            type="tex"
+            type="number"
             name="currencyInput"
             value={currencyInput}
             onChange={(e) => handleCurrencyInput(e.target.value)}
