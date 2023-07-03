@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 
+type ExchangeRates = {
+  [currencyCode: string]: number;
+};
 function App() {
   const currencyOptions = [
     { currency: "USD", balance: 5000 },
@@ -8,13 +11,18 @@ function App() {
     { currency: "EUR", balance: 3500 },
     { currency: "NGN", balance: 200000 },
   ];
-  const [data, setData] = useState("");
+  const [data, setData] = useState<ExchangeRates>({});
   const [currencyInput, setCurrencyInput] = useState(0);
-  const [secondCurrencyInput, setSecondCurrencyInput] = useState("");
+  const [secondCurrencyInput, setSecondCurrencyInput] = useState<number>();
   const [currencyOps, setCurrencyOps] = useState(currencyOptions);
-  const [currencyOps2, setCurrencyOps2] = useState<typeof currencyOptions>([]);
+  const [currencyOps2, setCurrencyOps2] = useState<typeof currencyOptions>(
+    currencyOptions?.slice(1)
+  );
+  const initData = currencyOptions[0].currency;
   const [error, setError] = useState<null | unknown>(null);
-  const [selectedcurrencyOps, setSelectedcurrencyOps] = useState<string>("");
+  const [selectedcurrencyOps, setSelectedcurrencyOps] = useState<string>(
+    currencyOps2[0].currency
+  );
 
   const fetchData = async (params: any) => {
     try {
@@ -28,15 +36,22 @@ function App() {
     }
   };
 
-  const handleCurrencyInput = (e) => {
-    setCurrencyInput(e);
-    if (selectedcurrencyOps === " " || selectedcurrencyOps == null) return;
-    // handle edge case when nothing is returned
+  useEffect(() => {
+    fetchData(initData);
+  }, []);
+
+  useEffect(() => {
+    if (selectedcurrencyOps === "" || selectedcurrencyOps == null) return;
+
     const rate = data[selectedcurrencyOps];
-    const convValue = rate * currencyInput;
+    const convValue = Number(rate) * Number(currencyInput);
     if (convValue) {
       setSecondCurrencyInput(convValue);
     }
+  }, [currencyInput, data, selectedcurrencyOps]);
+
+  const handleCurrencyInput = (e) => {
+    setCurrencyInput(e);
   };
 
   const handleCurrencySelect = (e) => {
@@ -44,9 +59,13 @@ function App() {
     setCurrencyOps2(currencyOps.filter((item) => item.currency != e));
     const value = currencyOps.filter((item) => item.currency != e)[0];
     handleCurrencySelect2(value?.currency);
+    handleCurrencyInput(0);
+    setSecondCurrencyInput(0);
   };
   const handleCurrencySelect2 = (e) => {
     setSelectedcurrencyOps(e);
+    handleCurrencyInput(0);
+    setSecondCurrencyInput(0);
   };
   return (
     <section className="container">
@@ -81,7 +100,7 @@ function App() {
           <input
             type="number"
             value={secondCurrencyInput}
-            onChange={(e) => setSecondCurrencyInput(e.target.value)}
+            onChange={(e) => setSecondCurrencyInput(Number(e.target.value))}
           />
         </div>
       </main>
